@@ -1,0 +1,6 @@
+module Pods_Frigiradium {
+  umbrella header "Pods-Frigiradium-umbrella.h"
+
+  export *
+  module * { export * }
+}
