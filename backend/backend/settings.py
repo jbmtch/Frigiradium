@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,7 +75,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
+env_path = os.path.join(BASE_DIR, '.env')
+print(env_path)
 environ.Env.read_env()  # loads from .env
 
 DATABASES = {
