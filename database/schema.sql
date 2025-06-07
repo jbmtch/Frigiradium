@@ -1,3 +1,4 @@
+BEGIN;
 CREATE TABLE "User" (
   "id" serial PRIMARY KEY,
   "first_name" varchar(40),
@@ -22,6 +23,7 @@ CREATE TABLE "FoodItem" (
   "date_frozen" timestamp,
   "date_purchased" timestamp,
   "isMeal" boolean,
+  "date_refridgerated" timestamp,
   "amount" integer,
   "unit" varchar(10),
   "created_at" timestamp DEFAULT (now()),
@@ -82,3 +84,5 @@ ALTER TABLE "Inventory" ADD FOREIGN KEY ("household_id") REFERENCES "Household" 
 ALTER TABLE "UserInventory" ADD FOREIGN KEY ("user_id") REFERENCES "User" ("id");
 
 ALTER TABLE "UserInventory" ADD FOREIGN KEY ("inventory_id") REFERENCES "Inventory" ("id");
+
+COMMIT;
