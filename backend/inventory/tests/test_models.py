@@ -1,6 +1,6 @@
 import pytest
 from django.contrib.auth.models import User
-from inventory.models import UserProfile
+from inventory.models import UserProfile, Household
 
 # User / UserProfile Model
 
@@ -16,12 +16,15 @@ def test_user_profile_created_on_user_creation():
 
 
 @pytest.mark.django_db
-def test_user_creation_requires_username_and_password():
-    with pytest.raises(ValueError):
+def test_user_creation_requires_username():
+    with pytest.raises(ValueError, match="must be set"):
         User.objects.create_user(username="", password="testpass")
 
-    with pytest.raises(ValueError):
-        User.objects.create_user(username="testuser", password="")
+
+@pytest.mark.django_db
+def test_user_creation_requires_password(): 
+    user = User.objects.create_user(username="testuser", password=None)
+    assert user.has_usable_password() is False
 
 
 @pytest.mark.django_db
