@@ -27,4 +27,4 @@ Justin Mitchell
 [GitHub](https://github.com/jbmtch) • [LinkedIn](https://linkedin.com/in/jbmtch)
 
 ## 📄 Resume
-Check out my resume: [Justin_Mitchell_Resume_June_2025.pdf](/Users/justinmitchell/Frigiradium/Justin_Mitchell_Resume_June_2025 (1).pdf)
+Check out my resume: [Justin_Mitchell_Resume_June_2025.pdf](https://github.com/jbmtch/frigiradium/blob/main/Justin_Mitchell_Resume_June_2025.pdf)
