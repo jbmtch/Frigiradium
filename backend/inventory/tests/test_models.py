@@ -1,18 +1,28 @@
 import pytest
 from django.contrib.auth.models import User
 from inventory.models import UserProfile, Household
+from faker import Faker
+
+@pytest.fixture
+def fake():
+    return Faker()
 
 # User / UserProfile Model
 
 @pytest.mark.django_db
-def test_user_profile_created_on_user_creation():
-    user = User.objects.create_user(username="testuser", password="testpass")
+def test_user_profile_created_on_user_creation(fake):
+    username = fake.user_name()
+    password = fake.password()
+
+    user = User.objects.create_user(username=username, password=password)
 
     # Try to get the related user profile
     try:
         profile = UserProfile.objects.get(user=user)
     except UserProfile.DoesNotExist:
         pytest.fail("UserProfile was not created for the new user")
+
+    assert profile is not None
 
 
 @pytest.mark.django_db
