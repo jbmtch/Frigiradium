@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth.models import User
 from inventory.models import UserProfile, Household
+from inventory.factories import UserFactory
 from faker import Faker
 
 @pytest.fixture
@@ -10,13 +11,14 @@ def fake():
 # User / UserProfile Model
 
 @pytest.mark.django_db
+def test_user_factory_creates_profile():
+    user = UserFactory()
+    assert UserProfile.objects.filter(user=user).exists()
+
+@pytest.mark.django_db
 def test_user_profile_created_on_user_creation(fake):
-    username = fake.user_name()
-    password = fake.password()
+    user = UserFactory()
 
-    user = User.objects.create_user(username=username, password=password)
-
-    # Try to get the related user profile
     try:
         profile = UserProfile.objects.get(user=user)
     except UserProfile.DoesNotExist:
@@ -39,7 +41,8 @@ def test_user_creation_requires_password():
 
 @pytest.mark.django_db
 def test_updated_at_changes_on_profile_update():
-    user = User.objects.create_user(username="timestamptest", password="abc123")
+    user = UserFactory()
+    #user = User.objects.create_user(username="timestamptest", password="abc123")
     profile = user.userprofile
 
     original_updated_at = profile.updated_at
