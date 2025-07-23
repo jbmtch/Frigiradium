@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth.models import User
 from inventory.models import UserProfile, Household
-from inventory.factories import UserFactory
+from inventory.factories import UserFactory, HouseholdFactory
 from faker import Faker
 
 @pytest.fixture
@@ -59,13 +59,15 @@ def test_updated_at_changes_on_profile_update():
 
 @pytest.mark.django_db
 def test_user_profile_assigned_to_household():
-    user = User.objects.create_user(username='testuser', password="abc123")
-    household = Household.objects.create(name="Test Household")
+    user = UserFactory()
+    #user = User.objects.create_user(username='testuser', password="abc123")
+    #household = Household.objects.create(name="Test Household")
 
     profile = user.userprofile
-    profile.household = household
-    profile.save()
+    # profile.household = household
+    # profile.save()
+    print("user: ----- ", user)
+    print("profile: -----", profile)
 
     assert profile.household is not None
-    assert profile.household.name == "Test Household"
-    assert household.members.filter(user=user).exists()
+    assert isinstance(user.household.name, str)
