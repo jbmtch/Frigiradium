@@ -7,7 +7,9 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "test:backend": "source venv/bin/activate && pytest backend/",
+    "test:all": "npm run test && npm run test:backend"
   },
   "dependencies": {
     "react": "19.0.0",
