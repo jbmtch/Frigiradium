@@ -13,6 +13,7 @@ def fake():
 @pytest.mark.django_db
 def test_user_factory_creates_profile():
     user = UserFactory()
+    
     assert UserProfile.objects.filter(user=user).exists()
 
 @pytest.mark.django_db

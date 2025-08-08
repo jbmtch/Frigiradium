@@ -10,12 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 import environ
-import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+env = environ.Env()
+env_path = BASE_DIR / '.env'
+
+# DEBUGGING HELP
+print(f"Loading .env from: {env_path}")
+if env_path.exists():
+    print(".env file FOUND")
+else:
+    print(".env file MISSING")
+
+env.read_env(env_path)  # Load it explicitly
+
+# Now this will not throw:
+DB_NAME = env('DB_NAME')
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -78,10 +93,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = environ.Env()
-env_path = os.path.join(BASE_DIR, '.env')
-print(env_path)
-environ.Env.read_env()  # loads from .env
+env = environ.Env(
+    DEBUG=(bool,False)
+)
+# env_path = os.path.join(BASE_DIR, '.env')
+# print(env_path)
+env.read_env(os.path.join(BASE_DIR, '.env'))  # loads from .env
 
 DATABASES = {
     'default': {
