@@ -78,10 +78,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BASE_DIR.parent
 env = environ.Env()
-env_path = os.path.join(BASE_DIR, '.env')
-print(env_path)
-environ.Env.read_env()  # loads from .env
+env_path = os.path.join(REPO_ROOT, '.env')
+print('Here is the path --------', env_path)
+environ.Env.read_env(env_path)  # loads from .env
 
 DATABASES = {
     'default': {
