@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import environ
-import os
+# import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -78,11 +78,19 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 REPO_ROOT = BASE_DIR.parent
-env = environ.Env()
-env_path = os.path.join(REPO_ROOT, '.env')
-print('Here is the path --------', env_path)
-environ.Env.read_env(env_path)  # loads from .env
+for env_file in (BASE_DIR / '.env', REPO_ROOT / '.env'):
+    if env_file.exists():
+        environ.Env.read_env(env_file)
+        break
+else:
+    environ.Env.read_env()
+
+# env = environ.Env()
+# env_path = os.path.join(REPO_ROOT, '.env')
+# print('Here is the path --------', env_path)
+# environ.Env.read_env(env_path)  # loads from .env
 
 DATABASES = {
     'default': {
