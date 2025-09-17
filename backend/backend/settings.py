@@ -88,11 +88,6 @@ for env_file in (BASE_DIR / '.env', REPO_ROOT / '.env'):
 else:
     environ.Env.read_env()
 
-# env = environ.Env()
-# env_path = os.path.join(REPO_ROOT, '.env')
-# print('Here is the path --------', env_path)
-# environ.Env.read_env(env_path)  # loads from .env
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
