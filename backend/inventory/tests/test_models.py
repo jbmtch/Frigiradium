@@ -1,12 +1,14 @@
 import pytest
 from django.contrib.auth.models import User
 from inventory.models import UserProfile, Household
+from inventory.tests.factories import factories
 
 # User / UserProfile Model
 
 @pytest.mark.django_db
 def test_user_profile_created_on_user_creation():
-    user = User.objects.create_user(username="testuser", password="testpass")
+    user = factories.UserFactory()
+    # user = User.objects.create_user(username="testuser", password="testpass")
 
     # Try to get the related user profile
     try:

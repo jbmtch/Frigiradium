@@ -7,6 +7,7 @@ pluggy==1.6.0
 psycopg==3.2.3
 psycopg2-binary==2.9.10
 Pygments==2.19.1
+factory-boy==3.3.0
 pytest==8.4.0
 pytest-django==4.11.1
 python-dotenv==1.1.0
