@@ -4,3 +4,4 @@ psycopg==3.2.3
 psycopg2-binary==2.9.10
 sqlparse==0.5.2
 typing_extensions==4.12.2
+factory-boy==3.3.0
