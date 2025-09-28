@@ -41,5 +41,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: pytest-results
-        path: junit/test-results.xml
+        path: test-results/pytest.xml
         retention-days: 2
