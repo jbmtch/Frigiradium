@@ -42,4 +42,4 @@ jobs:
       with:
         name: pytest-results
         path: test-results/pytest.xml
-        retention-days: 2
+        retention-days: 1
