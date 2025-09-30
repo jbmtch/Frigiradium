@@ -79,6 +79,23 @@ def test_inventory_assigned_to_household():
     assert household.id == inventory.household.id
 
 @pytest.mark.django_db
+def test_inventory_can_exist_without_household():
+    inventory = factories.InventoryFactory()
+
+    assert inventory.household is None
+
+@pytest.mark.django_db
+def test_inventory_timestamp_updates_after_edits():
+    inventory = factories.InventoryFactory()
+
+    first_update_time = inventory.updated_at
+
+    inventory.name = 'New Last Name'
+    inventory.save()
+
+    assert first_update_time < inventory.updated_at
+
+@pytest.mark.django_db
 def test_inventory_household_set_to_null_upon_household_deletion():
     inventory = factories.InventoryFactory()
     household = factories.HouseholdFactory()
@@ -91,5 +108,6 @@ def test_inventory_household_set_to_null_upon_household_deletion():
 
     inventory.household.delete()
     inventory.refresh_from_db()
-    
+
     assert inventory.household is None
+
