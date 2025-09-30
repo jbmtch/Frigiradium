@@ -1,6 +1,7 @@
 import pytest
 import random
 import string
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from inventory.models import UserProfile, Household
 from inventory.tests.factories import factories
@@ -115,5 +116,12 @@ def test_inventory_name_length_constraint():
 
     too_long_string = ''.join(random.choices(string.ascii_letters + string.digits, k=101))
     inventory.name = too_long_string
-    inventory.save()
+
+    with pytest.raises(ValidationError) as excinfo:
+        inventory.full_clean()
+
+        assert (
+            "Ensure this value has at most 100 characters (it has 101)."
+            in excinfo.value.message_dict['name']
+        )
     
