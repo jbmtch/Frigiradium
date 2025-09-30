@@ -77,3 +77,18 @@ def test_inventory_assigned_to_household():
     assert inventory.household is not None
     assert inventory.household.name == 'Test Household'
     assert household.id == inventory.household.id
+
+@pytest.mark.django_db
+def test_inventory_household_set_to_null_upon_household_deletion():
+    inventory = factories.InventoryFactory()
+    household = factories.HouseholdFactory()
+
+    inventory.household = household
+    inventory.save()
+
+    assert inventory.household is not None
+    assert household.id == inventory.household.id
+
+    inventory.household.delete()
+
+    assert inventory.household is None
