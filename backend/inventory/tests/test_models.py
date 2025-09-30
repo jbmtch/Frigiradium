@@ -90,5 +90,6 @@ def test_inventory_household_set_to_null_upon_household_deletion():
     assert household.id == inventory.household.id
 
     inventory.household.delete()
-
+    inventory.refresh_from_db()
+    
     assert inventory.household is None
