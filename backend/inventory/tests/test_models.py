@@ -58,3 +58,22 @@ def test_user_profile_assigned_to_household():
     assert profile.household is not None
     assert profile.household.name == "Test Household"
     assert household.members.filter(user=user).exists()
+
+# Household Model Tests
+
+# Inventory Model Tests
+# -inventory assigned to household, when household gets deleted the inventor household_id is set to null
+
+
+
+@pytest.mark.django_db
+def test_inventory_assigned_to_household():
+    inventory = factories.InventoryFactory()
+    household = factories.HouseholdFactory(name='Test Household')
+
+    inventory.household = household
+    inventory.save()
+
+    assert inventory.household is not None
+    assert inventory.household.name == 'Test Household'
+    assert household.id == inventory.household.id
