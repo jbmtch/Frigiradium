@@ -17,5 +17,9 @@ class Household(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
+class Inventory(models.Model):
+    household_id = models.ForeignKey('Household', on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
