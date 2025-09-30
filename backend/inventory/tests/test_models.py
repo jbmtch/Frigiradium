@@ -1,4 +1,6 @@
 import pytest
+import random
+import string
 from django.contrib.auth.models import User
 from inventory.models import UserProfile, Household
 from inventory.tests.factories import factories
@@ -79,22 +81,18 @@ def test_inventory_assigned_to_household():
     assert household.id == inventory.household.id
 
 @pytest.mark.django_db
-def test_inventory_can_exist_without_household():
-    inventory = factories.InventoryFactory()
-
-    assert inventory.household is None
-
-@pytest.mark.django_db
 def test_inventory_timestamp_updates_after_edits():
     inventory = factories.InventoryFactory()
 
     first_update_time = inventory.updated_at
+    initial_creation_time = inventory.created_at
 
     inventory.name = 'New Last Name'
     inventory.save()
 
+    assert initial_creation_time == inventory.created_at
     assert first_update_time < inventory.updated_at
-
+     
 @pytest.mark.django_db
 def test_inventory_household_set_to_null_upon_household_deletion():
     inventory = factories.InventoryFactory()
@@ -111,3 +109,11 @@ def test_inventory_household_set_to_null_upon_household_deletion():
 
     assert inventory.household is None
 
+@pytest.mark.django_db
+def test_inventory_name_length_constraint():
+    inventory = factories.InventoryFactory()
+
+    too_long_string = ''.join(random.choices(string.ascii_letters + string.digits, k=101))
+    inventory.name = too_long_string
+    inventory.save()
+    
