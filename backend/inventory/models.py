@@ -22,12 +22,23 @@ class Inventory(models.Model):
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
 class FoodItem(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=50)
     user_id = models.ForeignKey('User', on_delete=models.CASCADE)
-
+    inventory_id = models.ForeignKey('Inventory', on_delete=models.CASCADE)
+    storage_type = models.CharField(max_length=50)
+    expiration_date = models.DateTimeField()
+    date_opened = models.DateTimeField(blank=True, null=True)
+    date_frozen = models.DateTimeField(blank=True, null=True)
+    date_purchased = models.DateTimeField()
+    isMeal = models.BooleanField()
+    date_refridgerated = models.DateTimeField(blank=True, null=True)
+    amount = models.PositiveIntegerField(blank=True, null=True)
+    unit = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 
