@@ -64,3 +64,23 @@ def test_inventory_name_length_constraint():
         inventory.full_clean()
 
     assert "Ensure this value has at most 100 characters (it has 101)." in excinfo.value.message_dict["name"]
+
+@pytest.mark.django_db
+def test_inventory_name_not_blank():
+    inventory = factories.InventoryFactory.build(name='')
+
+    with pytest.raises(ValidationError) as excinfo:
+        inventory.full_clean()
+
+    assert excinfo.value.message_dict['name'] == ["This field cannot be blank."]
+
+@pytest.mark.django_db
+def test_inventory_can_exist_without_household():
+    inventory = factories.InventoryFactory.build(household=None)
+
+    inventory.full_clean()
+
+    inventory.save()
+    inventory.refresh_from_db()
+
+    assert inventory.household is None
