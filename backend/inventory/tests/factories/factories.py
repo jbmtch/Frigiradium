@@ -24,3 +24,11 @@ class UserProfileFactory(DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     household = factory.SubFactory(HouseholdFactory)
 
+class InventoryFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Inventory
+
+    name = factory.Faker('last_name')
+    household = factory.SubFactory(HouseholdFactory)
+    
+
