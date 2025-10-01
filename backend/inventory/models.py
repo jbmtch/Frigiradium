@@ -22,4 +22,12 @@ class Inventory(models.Model):
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+class FoodItem(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=50)
+    user_id = models.ForeignKey('User', on_delete=models.CASCADE)
+
+
+
 
