@@ -40,7 +40,13 @@ class FoodItemFactory(DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     inventory = factory.SubFactory(InventoryFactory)
     storage_type = factory.Faker("random_element", elements=models.StorageType.values)
-    
+    expiration_date = factory.Faker('date_time_this_century', tzinfo=None)
+    date_opened = factory.Faker('date_time_this_century', tzinfo=None)
+    date_frozen = factory.Faker('date_time_this_century', tzinfo=None)
+    date_purchased = factory.Faker('date_time_this_century', tzinfo=None)
+    date_refridgerated = factory.Faker('date_time_this_century', tzinfo=None)
+    isMeal = factory.Faker('boolean')
+    amount = factory.Faker('randomize_nb_elements', number=200, max=250)
 
     
 
