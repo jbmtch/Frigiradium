@@ -23,9 +23,17 @@ class Inventory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class FoodCategory(models.TextChoices):
+    FRUIT = "FRUIT", "Fruit"
+    VEGETABLE = "VEGETABLE", "Vegetable"
+    GRAIN = "GRAIN", "Grain"
+    DAIRY = "DAIRY", "Dairy"
+    PROTEIN = "PROTEIN", "Protein"
+    OTHER = "OTHER", "Other"
+
 class FoodItem(models.Model):
     name = models.CharField(max_length=100)
-    category = models.CharField(max_length=50)
+    category = models.CharField(max_length=16, choices=FoodCategory.choices, default=FoodCategory.OTHER)
     user_id = models.ForeignKey('User', on_delete=models.CASCADE)
     inventory_id = models.ForeignKey('Inventory', on_delete=models.CASCADE)
     storage_type = models.CharField(max_length=50)
