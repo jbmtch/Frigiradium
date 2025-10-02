@@ -36,6 +36,11 @@ class FoodItemFactory(DjangoModelFactory):
         model = models.FoodItem
 
     name = factory.Faker('name')
+    category = factory.Faker("random_element", elements=models.FoodCategory.values)
+    user = factory.SubFactory(UserFactory)
+    inventory = factory.SubFactory(InventoryFactory)
+    storage_type = factory.Faker("random_element", elements=models.StorageType.values)
     
+
     
 

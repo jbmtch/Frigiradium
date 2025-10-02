@@ -30,12 +30,18 @@ class FoodCategory(models.TextChoices):
     PROTEIN = "PROTEIN", "Protein"
     OTHER = "OTHER", "Other"
 
+class StorageType(models.TextChoices):
+    FRIDGE = "FRIDGE", "Refridgerator"
+    FREEZER = "FREEZER", "Freezer"
+    PANTRY = "PANTRY", "Pantry"
+    COUNTER = "COUNTER", "Counter"
+
 class FoodItem(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=16, choices=FoodCategory.choices, default=FoodCategory.OTHER)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     inventory = models.ForeignKey('Inventory', on_delete=models.CASCADE)
-    storage_type = models.CharField(max_length=50)
+    storage_type = models.CharField(max_length=30, choices=StorageType.choices)
     expiration_date = models.DateTimeField()
     date_opened = models.DateTimeField(blank=True, null=True)
     date_frozen = models.DateTimeField(blank=True, null=True)
