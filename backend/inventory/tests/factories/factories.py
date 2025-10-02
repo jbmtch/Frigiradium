@@ -30,5 +30,12 @@ class InventoryFactory(DjangoModelFactory):
 
     name = factory.Faker('last_name')
     household = factory.SubFactory(HouseholdFactory)
+
+class FoodItemFactory(DjangoModelFactory):
+    class Meta:
+        model = models.FoodItem
+
+    name = factory.Faker('name')
+    
     
 
