@@ -36,11 +36,18 @@ class StorageType(models.TextChoices):
     PANTRY = "PANTRY", "Pantry"
     COUNTER = "COUNTER", "Counter"
 
+class MeasurementUnit(models.Model):
+    name = models.CharField(max_length=40)
+    abbreviation = models.CharField(max_length=10, unique=True)
+    
+    def __str__(self):
+        return self.name
+
 class FoodItem(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=16, choices=FoodCategory.choices, default=FoodCategory.OTHER)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    inventory = models.ForeignKey('Inventory', on_delete=models.CASCADE)
+    inventory = models.ForeignKey('Inventory', on_delete=models.CASCADE, related_name="food_items")
     storage_type = models.CharField(max_length=30, choices=StorageType.choices)
     expiration_date = models.DateTimeField()
     date_opened = models.DateTimeField(blank=True, null=True)
@@ -49,7 +56,7 @@ class FoodItem(models.Model):
     isMeal = models.BooleanField()
     date_refridgerated = models.DateTimeField(blank=True, null=True)
     amount = models.PositiveIntegerField(blank=True, null=True)
-    unit = models.CharField(max_length=10)
+    unit = models.ForeignKey(MeasurementUnit, on_delete=models.PROTECT, related_name="food_items")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
