@@ -90,7 +90,7 @@ def test_storage_type_only_valid_choices():
 
     choices = ['FRIDGE', 'FREEZER', 'PANTRY', 'COUNTER']
 
-    assert food_item.category in choices
+    assert food_item.storage_type in choices
 
 @pytest.mark.django_db
 def test_storage_type_prevents_invalid_choices():
