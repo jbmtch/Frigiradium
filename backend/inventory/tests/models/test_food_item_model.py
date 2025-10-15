@@ -77,3 +77,37 @@ def test_category_prevents_invalid_choices():
     assert food_item.category not in choices
     assert excinfo.value.message_dict['category'] == ["Value 'SNACK' is not a valid choice."]
 
+@pytest.mark.django_db
+def test_storage_type_only_valid_choices():
+    food_item = factories.FoodItemFactory()
+    user = factories.UserFactory()
+    inventory = factories.InventoryFactory()
+    unit = factories.MeasurementUnitFactory()
+
+    food_item.user = user
+    food_item.inventory = inventory
+    food_item.unit = unit
+
+    choices = ['FRIDGE', 'FREEZER', 'PANTRY', 'COUNTER']
+
+    assert food_item.category in choices
+
+@pytest.mark.django_db
+def test_storage_type_prevents_invalid_choices():
+    food_item = factories.FoodItemFactory.build(storage_type="TABLE")
+    user = factories.UserFactory()
+    inventory = factories.InventoryFactory()
+    unit = factories.MeasurementUnitFactory()
+
+    food_item.user = user
+    food_item.inventory = inventory
+    food_item.unit = unit
+
+    choices = ['FRIDGE', 'FREEZER', 'PANTRY', 'COUNTER']
+
+    with pytest.raises(ValidationError) as excinfo:
+        food_item.full_clean()
+
+    assert food_item.storage_type not in choices
+    assert excinfo.value.message_dict['storage_type'] == ["Value 'TABLE' is not a valid choice."]
+
