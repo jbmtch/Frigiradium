@@ -43,6 +43,13 @@ class MeasurementUnit(models.Model):
     def __str__(self):
         return self.name
 
+class UnitConversion(models.Model):
+    from_unit = models.ForeignKey(MeasurementUnit, related_name="conversions_from", on_delete=models.CASCADE)
+    to_unit = models.ForeignKey(MeasurementUnit, related_name="conversions_to", on_delete=models.CASCADE)
+    conversion_factor = models.DecimalField(max_digits=10, decimal_places=4)
+    
+
+
 class FoodItem(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=16, choices=FoodCategory.choices, default=FoodCategory.OTHER)
