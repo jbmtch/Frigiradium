@@ -31,6 +31,14 @@ class InventoryFactory(DjangoModelFactory):
     name = factory.Faker('last_name')
     household = factory.SubFactory(HouseholdFactory)
 
+class MeasurementUnitFactory(DjangoModelFactory):
+    class Meta: 
+        model = models.MeasurementUnit
+
+    # using only grams until i fully implement unit conversion
+    name = "Grams"
+    abbreviation = factory.Sequence(lambda n: f"g{n}")
+
 class FoodItemFactory(DjangoModelFactory):
     class Meta:
         model = models.FoodItem
@@ -47,6 +55,9 @@ class FoodItemFactory(DjangoModelFactory):
     date_refridgerated = factory.Faker('date_time_this_century', tzinfo=None)
     isMeal = factory.Faker('boolean')
     amount = factory.Faker('randomize_nb_elements', number=200, max=250)
+    unit = factory.SubFactory(MeasurementUnitFactory)
+
+
 
     
 
