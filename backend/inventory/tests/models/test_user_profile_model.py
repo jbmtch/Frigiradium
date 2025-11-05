@@ -47,7 +47,7 @@ def test_updated_at_changes_on_profile_update():
 @pytest.mark.django_db
 def test_user_profile_assigned_to_household():
     user = User.objects.create_user(username="testuser", password="abc123")
-    household = Household.objects.create(name="Test Household")
+    household = Household.objects.create(name="Test Household", user=user)
 
     profile = user.userprofile
     profile.household = household
