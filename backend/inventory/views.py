@@ -17,6 +17,8 @@ class HouseholdViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return super().get_queryset().filter(user=user)
     
-
     def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
         serializer.save(user=self.request.user)

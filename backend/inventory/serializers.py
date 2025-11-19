@@ -10,6 +10,7 @@ class HouseholdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Household
         fields = '__all__'
+        read_only_fields = ('user',)
 
 
 
