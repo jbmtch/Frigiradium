@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Q
 from inventory.serializers import UserProfileSerializer, HouseholdSerializer
 from rest_framework import permissions, viewsets
 from inventory.models import UserProfile, Household
@@ -16,7 +17,8 @@ class HouseholdViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return super().get_queryset().filter(user=user)
+        # fetches households the user owns or is a member of.
+        return super().get_queryset().filter(Q(user=user) | Q(members__user=user)).distinct()
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
