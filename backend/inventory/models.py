@@ -13,8 +13,13 @@ class UserProfile(models.Model):
 
 class Household(models.Model):
     name = models.CharField(max_length=100)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class UserInventory(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    inventory = models.ForeignKey('Inventory', on_delete=models.CASCADE, related_name="inventory")
 
 class Inventory(models.Model):
     household = models.ForeignKey('Household', on_delete=models.SET_NULL, null=True, blank=True)

@@ -5,6 +5,7 @@ from inventory import views
 
 router = routers.DefaultRouter()
 router.register(r"userprofiles", views.UserProfileViewSet)
+router.register(r"households", views.HouseholdViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
