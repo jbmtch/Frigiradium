@@ -11,6 +11,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 class HouseholdViewSet(viewsets.ModelViewSet):
     serializer_class = HouseholdSerializer
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Household.objects.all()
 
     def get_queryset(self):
