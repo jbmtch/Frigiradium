@@ -20,7 +20,19 @@ Frigiradium is a full-stack mobile/web app that helps households reduce food was
 _Add screenshots or a Loom demo once the UI is polished_
 
 ## 🚀 Run Locally
-Instructions coming soon!
+1. Copy the environment template and add your own secrets:
+   ```bash
+   cp .env.example .env
+   ```
+   Update `DB_PASSWORD` (and any other sensitive fields) with freshly rotated credentials before running the app.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run tests to verify the setup:
+   ```bash
+   pytest
+   ```
 
 ## 👤 Author
 Justin Mitchell  
