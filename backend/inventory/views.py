@@ -3,6 +3,7 @@ from django.db.models import Q
 from inventory.serializers import UserProfileSerializer, HouseholdSerializer
 from rest_framework import permissions, viewsets
 from inventory.models import UserProfile, Household
+from inventory.permissions import IsHouseholdOwner
 # Create your views here.
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -12,7 +13,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 class HouseholdViewSet(viewsets.ModelViewSet):
     serializer_class = HouseholdSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsHouseholdOwner]
     queryset = Household.objects.all()
 
     def get_queryset(self):
@@ -24,4 +25,4 @@ class HouseholdViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save()
