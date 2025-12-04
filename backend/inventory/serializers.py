@@ -1,4 +1,4 @@
-from inventory.models import UserProfile, Household
+from inventory.models import UserProfile, Household, Inventory, UserInventory
 from rest_framework import serializers
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -11,6 +11,19 @@ class HouseholdSerializer(serializers.ModelSerializer):
         model = Household
         fields = '__all__'
         read_only_fields = ('user',)
+
+class InventorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inventory
+        fields = '__all__'
+        read_only_fields = ('household',)
+
+class UserInventorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserInventory
+        fields = '__all__'
+        read_only_fields = ('user', 'inventory')
+
 
 
 

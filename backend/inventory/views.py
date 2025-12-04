@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.db.models import Q
-from inventory.serializers import UserProfileSerializer, HouseholdSerializer
+from inventory.serializers import UserProfileSerializer, HouseholdSerializer, InventorySerializer, UserInventorySerializer
 from rest_framework import permissions, viewsets
-from inventory.models import UserProfile, Household
+from inventory.models import UserProfile, Household, Inventory, UserInventory
 from inventory.permissions import IsHouseholdOwner
 # Create your views here.
 
@@ -26,3 +26,24 @@ class HouseholdViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
+
+class InventoryViewSet(viewsets.ModelViewSet):
+    serializer_class = InventorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Inventory.objects.all()
+    
+    def get_queryset(self):
+        user = self.request.user
+        # only should be able to see your own inventory
+        return super().get_queryset().filter(user=user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+class UserInventoryViewSet(viewsets.ModelViewSet):
+    serializer_class = UserInventorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = UserInventory.objects.all()
