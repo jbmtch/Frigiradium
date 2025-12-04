@@ -1,8 +1,10 @@
 import random
 import string
+import pdb
 
 import pytest
 from django.core.exceptions import ValidationError
+
 
 from inventory.tests.factories import factories
 
@@ -84,3 +86,20 @@ def test_inventory_can_exist_without_household():
     inventory.refresh_from_db()
 
     assert inventory.household is None
+
+@pytest.mark.django_db
+def test_user_can_belong_to_multiple_inventories():
+    user = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inv1 = factories.InventoryFactory.create(household=household)
+    inv2 = factories.InventoryFactory.create(household=household)
+
+    factories.UserInventoryFactory.create(user=user, inventory=inv1)
+    factories.UserInventoryFactory.create(user=user, inventory=inv2)
+
+    inventories = user.inventories.all()
+
+    assert inventories.count() == 2
+    assert {inv1.id, inv2.id} == set(inventories.values_list("id", flat=True))
+
+    

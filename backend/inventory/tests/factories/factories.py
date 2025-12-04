@@ -31,6 +31,13 @@ class InventoryFactory(DjangoModelFactory):
     name = factory.Faker('last_name')
     household = factory.SubFactory(HouseholdFactory)
 
+class UserInventoryFactory(DjangoModelFactory):
+    class Meta:
+        model = models.UserInventory
+
+    user = factory.SubFactory(UserFactory)
+    inventory = factory.SubFactory(InventoryFactory)
+
 class MeasurementUnitFactory(DjangoModelFactory):
     class Meta: 
         model = models.MeasurementUnit
