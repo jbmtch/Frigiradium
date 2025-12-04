@@ -35,7 +35,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         # only should be able to see your own inventory
-        return super().get_queryset().filter(user=user)
+        return Inventory.objects.filter(memberships__user=user).distinct()
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -47,3 +47,8 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
     serializer_class = UserInventorySerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = UserInventory.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        # Show only memberships that involve inventories the user belongs to
+        return UserInventory.objects.filter(user=user)
