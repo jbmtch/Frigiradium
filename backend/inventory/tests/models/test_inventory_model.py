@@ -1,6 +1,5 @@
 import random
 import string
-import pdb
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -101,5 +100,20 @@ def test_user_can_belong_to_multiple_inventories():
 
     assert inventories.count() == 2
     assert {inv1.id, inv2.id} == set(inventories.values_list("id", flat=True))
+
+@pytest.mark.django_db
+def test_inventory_can_have_multiple_users():
+    user1 = factories.UserFactory()
+    user2 = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inv = factories.InventoryFactory(household=household)
+
+    factories.UserInventoryFactory.create(user=user1, inventory=inv)
+    factories.UserInventoryFactory.create(user=user2, inventory=inv)
+
+    users = inv.memberships.all()
+
+    assert users.count() == 2
+    assert {users[0].user.id, users[1].user.id} == set(users.values_list("id", flat=True))
 
     
