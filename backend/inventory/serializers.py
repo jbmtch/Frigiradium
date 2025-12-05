@@ -22,7 +22,6 @@ class UserInventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInventory
         fields = '__all__'
-        read_only_fields = ('user', 'inventory')
 
 
 
