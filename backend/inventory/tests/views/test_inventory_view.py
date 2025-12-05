@@ -1,0 +1,66 @@
+import pytest
+import pdb
+
+from inventory.tests.factories import factories
+from inventory.models import UserInventory
+from rest_framework.test import APIClient
+from django.urls import reverse
+
+@pytest.mark.django_db
+def test_inventory_list_returns_only_user_inventories():
+    client = APIClient()
+    user1 = factories.UserFactory()
+    user2 = factories.UserFactory()
+    household = factories.HouseholdFactory()
+
+    inv1 = factories.InventoryFactory(household=household, name="Fridge")
+    inv2 = factories.InventoryFactory(household=household, name="Freezer")
+
+    factories.UserInventoryFactory.create(user=user1, inventory=inv1)
+    factories.UserInventoryFactory.create(user=user2, inventory=inv2)
+
+    client.force_authenticate(user=user1)
+    url = reverse('inventory-list')
+    response = client.get(url)
+
+    assert response.status_code == 200
+    names = [item['name'] for item in response.json()]
+
+    assert "Fridge" in names
+    assert "Freezer" not in names
+
+@pytest.mark.django_db
+def test_cannot_retrieve_inventory_unless_member():
+    client = APIClient()
+    member = factories.UserFactory()
+    outsider = factories.UserFactory()
+    household = factories.HouseholdFactory()
+
+    inv = factories.InventoryFactory(household=household, name="Fridge")
+
+    factories.UserInventoryFactory.create(user=member, inventory=inv)
+
+    client.force_authenticate(user=outsider)
+    url = reverse('inventory-detail', args=[inv.id])
+    response = client.get(url)
+
+    assert response.status_code in (403, 404)
+
+@pytest.mark.django_db
+def test_creating_inventory_adds_creator_as_member():
+    client = APIClient()
+    user = factories.UserFactory()
+    household = factories.HouseholdFactory()
+
+    client.force_authenticate(user=user)
+
+    url = reverse('inventory-list')
+    payload = {"name":"Family Fridge", "household": household.id}
+    response = client.post(url, payload, format='json')
+
+    assert response.status_code == 201
+    inv_id = response.json()['id']
+
+    memberships = UserInventory.objects.filter(user=user, inventory_id=inv_id)
+    assert memberships.count() == 1
+

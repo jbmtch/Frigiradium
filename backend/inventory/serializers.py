@@ -16,7 +16,7 @@ class InventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventory
         fields = '__all__'
-        read_only_fields = ('household',)
+        read_only_fields = ('id', 'created_at', 'updated_at')
 
 class UserInventorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -38,7 +38,8 @@ class InventoryViewSet(viewsets.ModelViewSet):
         return Inventory.objects.filter(memberships__user=user).distinct()
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        inventory = serializer.save()
+        UserInventory.objects.create(user=self.request.user, inventory=inventory)
 
     def perform_update(self, serializer):
         serializer.save()
