@@ -1,8 +1,10 @@
 import random
 import string
+import pdb
 
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
 
 from inventory.tests.factories import factories
@@ -114,6 +116,16 @@ def test_inventory_can_have_multiple_users():
     users = inv.memberships.all()
 
     assert users.count() == 2
-    assert {users[0].user.id, users[1].user.id} == set(users.values_list("id", flat=True))
+    assert {users[0].user_id, users[1].user_id} == set(users.values_list("user_id", flat=True))
+
+@pytest.mark.django_db
+def test_user_inventory_membership_is_unique():
+    user = factories.UserFactory()
+    inv = factories.InventoryFactory()
+
+    factories.UserInventoryFactory.create(user=user, inventory=inv)
+
+    with pytest.raises(IntegrityError):
+        factories.UserInventoryFactory.create(user=user, inventory=inv)
 
     
