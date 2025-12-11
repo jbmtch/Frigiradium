@@ -2,8 +2,10 @@ from django.shortcuts import render
 from django.db.models import Q
 from inventory.serializers import UserProfileSerializer, HouseholdSerializer, InventorySerializer, UserInventorySerializer
 from rest_framework import permissions, viewsets
+from rest_framework.exceptions import PermissionDenied
 from inventory.models import UserProfile, Household, Inventory, UserInventory
 from inventory.permissions import IsHouseholdOwner
+
 # Create your views here.
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -52,4 +54,11 @@ class UserInventoryViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         # Show only memberships that involve inventories the user belongs to
-        return UserInventory.objects.filter(user=user)
+        return UserInventory.objects.filter(inventory__memberships__user=user).distinct()
+    
+    def perform_create(self, serializer):
+        inventory = serializer.validated_data['inventory']
+        # Only users who already belong to an inventory can manage memberships for it
+        if not inventory.memberships.filter(user=self.request.user).exists():
+            raise PermissionDenied("You must already be a member of this inventory to add members.")
+        serializer.save()
