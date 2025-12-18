@@ -46,7 +46,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
-class UserInventoryViewSet(viewsets.ReadOnlyModelViewSet):
+class UserInventoryViewSet(viewsets.ModelViewSet):
     serializer_class = UserInventorySerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = UserInventory.objects.all()
