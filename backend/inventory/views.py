@@ -64,8 +64,12 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     def perform_update(self, serializer):
-        inventory = serializer.validated_data['inventory']
-
+        inventory = serializer.validated_data.get('inventory', serializer.instance.inventory)
+        # `partial=True` on PATCH requests means the incoming payload may omit the
+        # inventory field. `validated_data` only contains keys provided by the
+        # client, so we fall back to the current instance's inventory when it is
+        # absent. This preserves the permission check while avoiding a KeyError
+        # on partial updates.
         if not inventory.memberships.filter(user=self.request.user).exists():
             raise PermissionDenied("You must already be a member of this inventory to perform updates.")
         serializer.save()
