@@ -64,3 +64,32 @@ def test_creating_inventory_adds_creator_as_member():
     memberships = UserInventory.objects.filter(user=user, inventory_id=inv_id)
     assert memberships.count() == 1
 
+@pytest.mark.django_db
+def test_can_only_access_inventories_you_are_member_of():
+    client = APIClient()
+    member = factories.UserFactory()
+    non_member_user = factories.UserFactory()
+    household = factories.HouseholdFactory()
+
+    inventory = factories.InventoryFactory(household=household)
+
+    factories.UserInventoryFactory.create(user=member, inventory=inventory)
+
+    client.force_authenticate(user=non_member_user)
+    url = reverse('inventory-detail', args=[inventory.id])
+
+    response = client.get(url)
+    # pdb.set_trace()
+
+    assert response.status_code == 404
+    memberships = UserInventory.objects.filter(user=member, inventory=inventory)
+    assert memberships.count() == 1 
+
+
+
+
+
+
+
+
+

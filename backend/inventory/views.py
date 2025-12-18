@@ -62,3 +62,10 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
         if not inventory.memberships.filter(user=self.request.user).exists():
             raise PermissionDenied("You must already be a member of this inventory to add members.")
         serializer.save()
+
+    def perform_update(self, serializer):
+        inventory = serializer.validated_data['inventory']
+
+        if not inventory.memberships.filter(user=self.request.user).exists():
+            raise PermissionDenied("You must already be a member of this inventory to perform updates.")
+        serializer.save()
