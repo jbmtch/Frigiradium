@@ -1,5 +1,6 @@
 from inventory.models import UserProfile, Household, Inventory, UserInventory
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,7 +22,14 @@ class InventorySerializer(serializers.ModelSerializer):
 class UserInventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInventory
-        fields = '__all__'
+        
+        validators = [
+            UniqueTogetherValidator(
+                queryset=UserInventory.objects.all(),
+                fields=['user', 'inventory'],
+                message='This user is already associated with this inventory.'
+            )
+        ]
 
 
 
