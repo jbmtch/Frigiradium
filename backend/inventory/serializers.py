@@ -22,6 +22,7 @@ class InventorySerializer(serializers.ModelSerializer):
 class UserInventorySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInventory
+        fields = '__all__'
         
         validators = [
             UniqueTogetherValidator(
