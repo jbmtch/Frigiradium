@@ -5,6 +5,7 @@ from inventory.tests.factories import factories
 from inventory.models import UserInventory
 from rest_framework.test import APIClient
 from django.urls import reverse
+from django.db import IntegrityError
 
 @pytest.mark.django_db
 def test_inventory_list_returns_only_user_inventories():
@@ -84,6 +85,28 @@ def test_can_only_access_inventories_you_are_member_of():
     assert response.status_code == 404
     memberships = UserInventory.objects.filter(user=member, inventory=inventory)
     assert memberships.count() == 1 
+
+@pytest.mark.django_db
+def test_cannot_create_duplicate_user_inventory_association():
+    client = APIClient()
+    member = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inventory = factories.InventoryFactory(household=household)
+
+    factories.UserInventoryFactory.create(user=member, inventory=inventory)
+
+    # try to create another UserInventory object with same user / inventory 
+
+    client.force_authenticate(user=member)
+    url = reverse('userinventory-list')
+    payload = {"user": member.id, "inventory": inventory.id }
+    response = client.post(url, payload, format='json')
+
+    assert response.status_code == 400
+    assert response.json()['non_field_errors'] == [
+        'This user is already associated with this inventory.'
+    ]
+
 
 
 
