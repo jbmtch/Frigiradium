@@ -42,10 +42,11 @@ class InventoryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         household_id = self.kwargs.get("household_id")
         household = get_object_or_404(Household, pk=household_id)
-        
-        if not household.members.filter(user=self.request.user).exists():
-            raise PermissionDenied("You must already be a member of this household to create an inventory within this household.")
-        inventory = serializer.save()
+
+        if not (household.user == self.request.user or household.members.filter(user=self.request.user).exists()):
+            raise PermissionDenied("You must be a member of this household to create an inventory within it.")
+
+        inventory = serializer.save(household=household)
         UserInventory.objects.create(user=self.request.user, inventory=inventory)
 
     def perform_update(self, serializer):
