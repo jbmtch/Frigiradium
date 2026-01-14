@@ -80,7 +80,7 @@ def test_can_only_access_inventories_you_are_member_of():
     url = reverse('inventory-detail', args=[inventory.id])
 
     response = client.get(url)
-    # pdb.set_trace()
+    pdb.set_trace()
 
     assert response.status_code == 404
     memberships = UserInventory.objects.filter(user=member, inventory=inventory)

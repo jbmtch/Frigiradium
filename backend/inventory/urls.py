@@ -11,5 +11,9 @@ router.register(r"userinventory", views.UserInventoryViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("households/<int:household_id>/inventory/",
+         views.InventoryViewSet.as_view({"post": "create"}),
+         name="household-inventory-create",
+         ),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]

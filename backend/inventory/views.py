@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.db.models import Q
 from inventory.serializers import UserProfileSerializer, HouseholdSerializer, InventorySerializer, UserInventorySerializer
 from rest_framework import permissions, viewsets
@@ -40,6 +40,11 @@ class InventoryViewSet(viewsets.ModelViewSet):
         return Inventory.objects.filter(memberships__user=user).distinct()
     
     def perform_create(self, serializer):
+        household_id = self.kwargs.get("household_id")
+        household = get_object_or_404(Household, pk=household_id)
+        
+        if not household.members.filter(user=self.request.user).exists():
+            raise PermissionDenied("You must already be a member of this household to create an inventory within this household.")
         inventory = serializer.save()
         UserInventory.objects.create(user=self.request.user, inventory=inventory)
 
