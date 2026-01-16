@@ -115,7 +115,17 @@ def test_cannot_create_inventory_unless_member_of_household():
     household = factories.HouseholdFactory()
     inventory = factories.InventoryFactory()
 
-    
+    client.force_authenticate(user=non_household_member)
+
+    url = reverse("household-inventory-create")
+    payload = {"user": non_household_member.id, "inventory": inventory.id }
+    response = client.post(url, payload, format='json')
+
+    assert response.status_code == 400
+    assert response.json()['non_field_errors'] == [
+        'You must be a member of this household to create an inventory within it'
+    ]
+
 
 
 
