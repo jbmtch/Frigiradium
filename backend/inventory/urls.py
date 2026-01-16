@@ -15,5 +15,13 @@ urlpatterns = [
          views.InventoryViewSet.as_view({"post": "create"}),
          name="household-inventory-create",
          ),
+    path("households/<int:household_id>/inventory/",
+         views.InventoryViewSet.as_view({"post": "update"}),
+         name="household-inventory-update",
+         ),
+    path("households/<int:household_id>/inventory/",
+         views.InventoryViewSet.as_view({"get": "get_queryset"}),
+         name="household-inventory-get",
+         ),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]

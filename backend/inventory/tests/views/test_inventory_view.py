@@ -107,6 +107,16 @@ def test_cannot_create_duplicate_user_inventory_association():
         'This user is already associated with this inventory.'
     ]
 
+@pytest.mark.django_db
+def test_cannot_create_inventory_unless_member_of_household():
+    client = APIClient()
+    non_household_member = factories.UserFactory()
+    household_member = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inventory = factories.InventoryFactory()
+
+    
+
 
 
 
