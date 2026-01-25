@@ -55,7 +55,7 @@ def test_creating_inventory_adds_creator_as_member():
     client.force_authenticate(user=user)
 
     url = reverse('household-inventory', args=[household.id])
-    pdb.set_trace()
+    
     payload = {"name":"Family Fridge"}
     response = client.post(url, payload, format='json')
 
