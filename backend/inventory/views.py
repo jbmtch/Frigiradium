@@ -39,7 +39,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
         # only should be able to see your own inventory, from households you belong to
         household_id = self.kwargs.get("household_id")
         queryset = Inventory.objects.filter(memberships__user=user).distinct()
-        if household_id:
+        if household_id is not None:
             queryset = queryset.filter(household_id=household_id)
         return queryset
     

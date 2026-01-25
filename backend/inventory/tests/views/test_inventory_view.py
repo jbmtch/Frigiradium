@@ -54,8 +54,8 @@ def test_creating_inventory_adds_creator_as_member():
 
     client.force_authenticate(user=user)
 
-    url = reverse('inventory-list')
-    payload = {"name":"Family Fridge", "household": household.id}
+    url = reverse('household-inventory', args=[household.id])
+    payload = {"name":"Family Fridge"}
     response = client.post(url, payload, format='json')
 
     assert response.status_code == 201
@@ -118,9 +118,9 @@ def test_cannot_create_inventory_unless_member_of_household():
     response = client.post(url, payload, format='json')
 
     assert response.status_code == 403
-    assert response.json()['detail'] == [
+    assert response.json()['detail'] == (
         'You must be a member of this household to create an inventory within it.'
-    ]
+    )
 
 
 
