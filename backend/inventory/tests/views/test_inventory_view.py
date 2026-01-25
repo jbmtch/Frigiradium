@@ -5,7 +5,6 @@ from inventory.tests.factories import factories
 from inventory.models import UserInventory
 from rest_framework.test import APIClient
 from django.urls import reverse
-from django.db import IntegrityError
 
 @pytest.mark.django_db
 def test_inventory_list_returns_only_user_inventories():
@@ -80,7 +79,6 @@ def test_can_only_access_inventories_you_are_member_of():
     url = reverse('inventory-detail', args=[inventory.id])
 
     response = client.get(url)
-    pdb.set_trace()
 
     assert response.status_code == 404
     memberships = UserInventory.objects.filter(user=member, inventory=inventory)
@@ -111,19 +109,17 @@ def test_cannot_create_duplicate_user_inventory_association():
 def test_cannot_create_inventory_unless_member_of_household():
     client = APIClient()
     non_household_member = factories.UserFactory()
-    household_member = factories.UserFactory()
     household = factories.HouseholdFactory()
-    inventory = factories.InventoryFactory()
 
     client.force_authenticate(user=non_household_member)
 
-    url = reverse("household-inventory-create")
-    payload = {"user": non_household_member.id, "inventory": inventory.id }
+    url = reverse("household-inventory", args=[household.id])
+    payload = {"name": "Fridge"}
     response = client.post(url, payload, format='json')
 
-    assert response.status_code == 400
-    assert response.json()['non_field_errors'] == [
-        'You must be a member of this household to create an inventory within it'
+    assert response.status_code == 403
+    assert response.json()['detail'] == [
+        'You must be a member of this household to create an inventory within it.'
     ]
 
 

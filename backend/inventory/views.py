@@ -38,9 +38,10 @@ class InventoryViewSet(viewsets.ModelViewSet):
         user = self.request.user
         # only should be able to see your own inventory, from households you belong to
         household_id = self.kwargs.get("household_id")
-        household = get_object_or_404(Household, pk=household_id)
-
-        return Inventory.objects.filter(memberships__user=user, household=household).distinct()
+        queryset = Inventory.objects.filter(memberships__user=user).distinct()
+        if household_id:
+            queryset = queryset.filter(household_id=household_id)
+        return queryset
     
     def perform_create(self, serializer):
         household_id = self.kwargs.get("household_id")
@@ -53,7 +54,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
         UserInventory.objects.create(user=self.request.user, inventory=inventory)
 
     def perform_update(self, serializer):
-        household_id = self.kwargs.get("household_id")
+        household_id = serializer.instance.household.id
         household = get_object_or_404(Household, pk=household_id)
 
         if not (household.user == self.request.user or household.members.filter(user=self.request.user).exists()):
