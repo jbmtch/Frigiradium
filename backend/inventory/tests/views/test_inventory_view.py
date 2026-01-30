@@ -55,7 +55,7 @@ def test_creating_inventory_adds_creator_as_member():
     client.force_authenticate(user=user)
 
     url = reverse('household-inventory', args=[household.id])
-    
+
     payload = {"name":"Family Fridge"}
     response = client.post(url, payload, format='json')
 
@@ -122,6 +122,51 @@ def test_cannot_create_inventory_unless_member_of_household():
     assert response.json()['detail'] == (
         'You must be a member of this household to create an inventory within it.'
     )
+
+@pytest.mark.django_db
+def test_cannot_add_non_household_member_to_inventory():
+    client = APIClient()
+    non_household_member = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inventory = factories.InventoryFactory()
+
+    requester = household.user
+
+    factories.UserInventoryFactory.create(user=requester, inventory=inventory)
+
+    factories.HouseholdFactory(user=non_household_member)
+
+    client.force_authenticate(user=requester)
+    url = reverse('userinventory-list')
+    payload = {"user": non_household_member.id, "inventory": inventory.id}
+    response = client.post(url, payload, format='json')
+
+    assert response.status_code == 403
+    assert response.json()['detail'] == (
+        'User must belong to this household to be added to the inventory.'
+    )
+
+@pytest.mark.django_db
+def test_can_add_household_member_to_inventory():
+    client = APIClient()
+    household_member = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inventory = factories.InventoryFactory()
+    requester = household.user
+
+    factories.UserProfileFactory(user=household_member, household=household)
+    factories.UserInventoryFactory.create(user=requester, inventory=inventory)
+
+    client.force_authenticate(user=requester)
+    url = reverse('userinventory-list')
+    payload = {"user": household_member.id, "inventory": inventory.id}
+    response = client.post(url, payload, format='json')
+
+    assert response.status_code == 201
+
+
+
+
 
 
 

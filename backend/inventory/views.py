@@ -73,9 +73,19 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         inventory = serializer.validated_data['inventory']
+        user = serializer.validated_data['user']
         # Only users who already belong to an inventory can manage memberships for it
         if not inventory.memberships.filter(user=self.request.user).exists():
             raise PermissionDenied("You must already be a member of this inventory to add members.")
+        
+        household = inventory.household
+        if household is None:
+            raise PermissionDenied("Inventories must belong to a household.")
+        is_owner = household.user_id == user.id
+        is_member = household.members.filter(user=user).exists()
+
+        if not (is_owner or is_member):
+            raise PermissionDenied("User must belong to this household to be added to the inventory.")
         serializer.save()
 
     def perform_update(self, serializer):
