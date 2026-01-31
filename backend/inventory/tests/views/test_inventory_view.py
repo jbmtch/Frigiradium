@@ -2,7 +2,7 @@ import pytest
 import pdb
 
 from inventory.tests.factories import factories
-from inventory.models import UserInventory
+from inventory.models import UserInventory, UserProfile
 from rest_framework.test import APIClient
 from django.urls import reverse
 
@@ -141,9 +141,9 @@ def test_cannot_add_non_household_member_to_inventory():
     payload = {"user": non_household_member.id, "inventory": inventory.id}
     response = client.post(url, payload, format='json')
 
-    assert response.status_code == 403
-    assert response.json()['detail'] == (
-        'User must belong to this household to be added to the inventory.'
+    assert response.status_code == 400
+    assert response.json()['non_field_errors'] == (
+        'User must belong to the inventory\'s household to be added.'
     )
 
 @pytest.mark.django_db
@@ -154,9 +154,12 @@ def test_can_add_household_member_to_inventory():
     inventory = factories.InventoryFactory()
     requester = household.user
 
-    factories.UserProfileFactory(user=household_member, household=household)
+    household_member_profile = household_member.userprofile
+    household_member_profile.household = household
+    household_member_profile.save(update_fields=["household"])
     factories.UserInventoryFactory.create(user=requester, inventory=inventory)
 
+    pdb.set_trace()
     client.force_authenticate(user=requester)
     url = reverse('userinventory-list')
     payload = {"user": household_member.id, "inventory": inventory.id}
