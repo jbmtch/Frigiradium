@@ -51,6 +51,8 @@ class UserInventorySerializer(serializers.ModelSerializer):
                 "User must belong to the inventory's household to be added."
             )
 
+        return attrs
+
 
 
 

@@ -151,7 +151,7 @@ def test_can_add_household_member_to_inventory():
     client = APIClient()
     household_member = factories.UserFactory()
     household = factories.HouseholdFactory()
-    inventory = factories.InventoryFactory()
+    inventory = factories.InventoryFactory(household=household)
     requester = household.user
 
     household_member_profile, created = UserProfile.objects.get_or_create(
