@@ -142,7 +142,7 @@ def test_cannot_add_non_household_member_to_inventory():
     response = client.post(url, payload, format='json')
 
     assert response.status_code == 400
-    assert response.json()['non_field_errors'] == (
+    assert response.json()['non_field_errors'][0] == (
         'User must belong to the inventory\'s household to be added.'
     )
 
@@ -154,12 +154,24 @@ def test_can_add_household_member_to_inventory():
     inventory = factories.InventoryFactory()
     requester = household.user
 
-    household_member_profile = household_member.userprofile
-    household_member_profile.household = household
-    household_member_profile.save(update_fields=["household"])
+    household_member_profile, created = UserProfile.objects.get_or_create(
+        user=household_member,
+        defaults={
+            "zip_code": "00000",
+            "phone_number": "0000000000",
+            "household": household,
+        },
+    )
+    if not created and household_member_profile.household_id != household.id:
+        household_member_profile.household = household
+        household_member_profile.save(update_fields=["household"])
+
     factories.UserInventoryFactory.create(user=requester, inventory=inventory)
 
-    pdb.set_trace()
+   # household_member_profile = household_member.userprofile
+    
+    
+    # pdb.set_trace()
     client.force_authenticate(user=requester)
     url = reverse('userinventory-list')
     payload = {"user": household_member.id, "inventory": inventory.id}
