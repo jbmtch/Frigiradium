@@ -168,32 +168,12 @@ def test_can_add_household_member_to_inventory():
 
     factories.UserInventoryFactory.create(user=requester, inventory=inventory)
 
-   # household_member_profile = household_member.userprofile
-    
-    
-    # pdb.set_trace()
     client.force_authenticate(user=requester)
     url = reverse('userinventory-list')
     payload = {"user": household_member.id, "inventory": inventory.id}
     response = client.post(url, payload, format='json')
 
     assert response.status_code == 201
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @pytest.mark.django_db
 def test_household_inventory_list_returns_only_that_household_when_member():
