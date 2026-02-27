@@ -193,3 +193,108 @@ def test_can_add_household_member_to_inventory():
 
 
 
+
+
+@pytest.mark.django_db
+def test_household_inventory_list_returns_only_that_household_when_member():
+    client = APIClient()
+    member = factories.UserFactory()
+    household_one = factories.HouseholdFactory()
+    household_two = factories.HouseholdFactory()
+
+    inv_one = factories.InventoryFactory(household=household_one, name="Kitchen")
+    inv_two = factories.InventoryFactory(household=household_two, name="Garage")
+
+    factories.UserInventoryFactory.create(user=member, inventory=inv_one)
+    factories.UserInventoryFactory.create(user=member, inventory=inv_two)
+
+    client.force_authenticate(user=member)
+    url = reverse("household-inventory", args=[household_one.id])
+    response = client.get(url)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 1
+    assert payload[0]["id"] == inv_one.id
+    assert payload[0]["name"] == "Kitchen"
+
+
+@pytest.mark.django_db
+def test_household_inventory_list_for_non_member_returns_empty_or_404_by_policy():
+    client = APIClient()
+    non_member = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    factories.InventoryFactory(household=household)
+
+    client.force_authenticate(user=non_member)
+    url = reverse("household-inventory", args=[household.id])
+    response = client.get(url)
+
+    assert response.status_code in (200, 404)
+    if response.status_code == 200:
+        assert response.json() == []
+
+
+@pytest.mark.django_db
+def test_patch_userinventory_partial_update_requires_requester_membership():
+    client = APIClient()
+    requester = factories.UserFactory()
+    member = factories.UserFactory()
+    replacement_user = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inventory = factories.InventoryFactory(household=household)
+
+    member.userprofile.household = household
+    member.userprofile.save(update_fields=["household"])
+    replacement_user.userprofile.household = household
+    replacement_user.userprofile.save(update_fields=["household"])
+
+    membership = factories.UserInventoryFactory.create(user=member, inventory=inventory)
+
+    client.force_authenticate(user=requester)
+    url = reverse("userinventory-detail", args=[membership.id])
+    response = client.patch(url, {"user": replacement_user.id}, format="json")
+
+    assert response.status_code in (403, 404)
+    if response.status_code == 403:
+        assert response.json()["detail"] == (
+            "You must already be a member of this inventory to perform updates."
+        )
+
+
+@pytest.mark.django_db
+def test_inventory_create_creates_exactly_one_membership_for_creator():
+    client = APIClient()
+    creator = factories.UserFactory()
+    household = factories.HouseholdFactory(user=creator)
+
+    client.force_authenticate(user=creator)
+    url = reverse("household-inventory", args=[household.id])
+    response = client.post(url, {"name": "Pantry"}, format="json")
+
+    assert response.status_code == 201
+    created_inventory_id = response.json()["id"]
+
+    memberships = UserInventory.objects.filter(user=creator, inventory_id=created_inventory_id)
+    assert memberships.count() == 1
+
+
+@pytest.mark.django_db
+def test_post_userinventory_requires_requester_membership_in_inventory():
+    client = APIClient()
+    requester = factories.UserFactory()
+    target_user = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inventory = factories.InventoryFactory(household=household)
+
+    target_user.userprofile.household = household
+    target_user.userprofile.save(update_fields=["household"])
+
+    client.force_authenticate(user=requester)
+    url = reverse("userinventory-list")
+    response = client.post(url, {"user": target_user.id, "inventory": inventory.id}, format="json")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == (
+        "You must already be a member of this inventory to add members."
+    )
