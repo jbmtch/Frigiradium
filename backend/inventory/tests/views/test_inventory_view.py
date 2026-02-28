@@ -300,6 +300,29 @@ def test_non_owner_cannot_update_another_membership():
 
 
 @pytest.mark.django_db
+def test_non_owner_cannot_reassign_their_own_membership_to_different_user():
+    client = APIClient()
+    owner = factories.UserFactory()
+    requester = factories.UserFactory()
+    replacement_user = factories.UserFactory()
+    household = factories.HouseholdFactory(user=owner)
+    inventory = factories.InventoryFactory(household=household)
+
+    for user in (requester, replacement_user):
+        user.userprofile.household = household
+        user.userprofile.save(update_fields=["household"])
+
+    membership = factories.UserInventoryFactory.create(user=requester, inventory=inventory)
+
+    client.force_authenticate(user=requester)
+    url = reverse("userinventory-detail", args=[membership.id])
+    response = client.patch(url, {"user": replacement_user.id}, format="json")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only the household owner can reassign inventory memberships."
+
+
+@pytest.mark.django_db
 def test_post_userinventory_requires_requester_membership_in_inventory():
     client = APIClient()
     requester = factories.UserFactory()

@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from inventory.serializers import UserProfileSerializer, HouseholdSerializer, InventorySerializer, UserInventorySerializer
 from rest_framework import permissions, viewsets
@@ -118,6 +118,11 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
         household = inventory.household
         is_self_update = membership.user_id == requester.id
         is_household_owner = household is not None and household.user_id == requester.id
+        next_user = serializer.validated_data.get('user', membership.user)
+        changing_assigned_user = next_user.id != membership.user_id
+
+        if changing_assigned_user and not is_household_owner:
+            raise PermissionDenied("Only the household owner can reassign inventory memberships.")
 
         if not (is_self_update or is_household_owner):
             raise PermissionDenied("Only the household owner can update other inventory memberships.")
