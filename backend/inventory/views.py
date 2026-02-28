@@ -10,8 +10,14 @@ from inventory.permissions import IsHouseholdOwner
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     serializer_class = UserProfileSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = UserProfile.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class HouseholdViewSet(viewsets.ModelViewSet):
     serializer_class = HouseholdSerializer
@@ -61,6 +67,12 @@ class InventoryViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You must be a member of this household to update an inventory within it.")
         serializer.save()
 
+    def perform_destroy(self, instance):
+        household = instance.household
+        if household is None or household.user != self.request.user:
+            raise PermissionDenied("Only the household owner can delete an inventory.")
+        instance.delete()
+
 class UserInventoryViewSet(viewsets.ModelViewSet):
     serializer_class = UserInventorySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -98,3 +110,22 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
         if not inventory.memberships.filter(user=self.request.user).exists():
             raise PermissionDenied("You must already be a member of this inventory to perform updates.")
         serializer.save()
+
+    def perform_destroy(self, instance):
+        inventory = instance.inventory
+        household = inventory.household
+        requester = self.request.user
+
+        if not inventory.memberships.filter(user=requester).exists():
+            raise PermissionDenied("You must already be a member of this inventory to remove members.")
+
+        is_self_removal = instance.user_id == requester.id
+        is_household_owner = household is not None and household.user_id == requester.id
+
+        if not (is_self_removal or is_household_owner):
+            raise PermissionDenied("Only the household owner can remove other inventory members.")
+
+        if inventory.memberships.count() <= 1:
+            raise PermissionDenied("An inventory must have at least one member.")
+
+        instance.delete()

@@ -278,3 +278,107 @@ def test_post_userinventory_requires_requester_membership_in_inventory():
     assert response.json()["detail"] == (
         "You must already be a member of this inventory to add members."
     )
+
+
+@pytest.mark.django_db
+def test_inventory_member_cannot_delete_inventory_they_do_not_own():
+    client = APIClient()
+    owner = factories.UserFactory()
+    member = factories.UserFactory()
+    household = factories.HouseholdFactory(user=owner)
+    member.userprofile.household = household
+    member.userprofile.save(update_fields=["household"])
+
+    inventory = factories.InventoryFactory(household=household)
+    factories.UserInventoryFactory.create(user=owner, inventory=inventory)
+    factories.UserInventoryFactory.create(user=member, inventory=inventory)
+
+    client.force_authenticate(user=member)
+    url = reverse("inventory-detail", args=[inventory.id])
+    response = client.delete(url)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only the household owner can delete an inventory."
+
+
+@pytest.mark.django_db
+def test_household_owner_can_remove_another_inventory_member():
+    client = APIClient()
+    owner = factories.UserFactory()
+    member = factories.UserFactory()
+    household = factories.HouseholdFactory(user=owner)
+    member.userprofile.household = household
+    member.userprofile.save(update_fields=["household"])
+
+    inventory = factories.InventoryFactory(household=household)
+    factories.UserInventoryFactory.create(user=owner, inventory=inventory)
+    membership = factories.UserInventoryFactory.create(user=member, inventory=inventory)
+
+    client.force_authenticate(user=owner)
+    url = reverse("userinventory-detail", args=[membership.id])
+    response = client.delete(url)
+
+    assert response.status_code == 204
+    assert not UserInventory.objects.filter(id=membership.id).exists()
+
+
+@pytest.mark.django_db
+def test_non_owner_cannot_remove_another_inventory_member():
+    client = APIClient()
+    owner = factories.UserFactory()
+    member = factories.UserFactory()
+    other_member = factories.UserFactory()
+    household = factories.HouseholdFactory(user=owner)
+
+    for user in (member, other_member):
+        user.userprofile.household = household
+        user.userprofile.save(update_fields=["household"])
+
+    inventory = factories.InventoryFactory(household=household)
+    factories.UserInventoryFactory.create(user=owner, inventory=inventory)
+    factories.UserInventoryFactory.create(user=member, inventory=inventory)
+    other_membership = factories.UserInventoryFactory.create(user=other_member, inventory=inventory)
+
+    client.force_authenticate(user=member)
+    url = reverse("userinventory-detail", args=[other_membership.id])
+    response = client.delete(url)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only the household owner can remove other inventory members."
+
+
+@pytest.mark.django_db
+def test_member_can_remove_self_when_inventory_has_multiple_members():
+    client = APIClient()
+    owner = factories.UserFactory()
+    member = factories.UserFactory()
+    household = factories.HouseholdFactory(user=owner)
+    member.userprofile.household = household
+    member.userprofile.save(update_fields=["household"])
+
+    inventory = factories.InventoryFactory(household=household)
+    factories.UserInventoryFactory.create(user=owner, inventory=inventory)
+    membership = factories.UserInventoryFactory.create(user=member, inventory=inventory)
+
+    client.force_authenticate(user=member)
+    url = reverse("userinventory-detail", args=[membership.id])
+    response = client.delete(url)
+
+    assert response.status_code == 204
+    assert not UserInventory.objects.filter(id=membership.id).exists()
+
+
+@pytest.mark.django_db
+def test_cannot_remove_last_inventory_member():
+    client = APIClient()
+    owner = factories.UserFactory()
+    household = factories.HouseholdFactory(user=owner)
+    inventory = factories.InventoryFactory(household=household)
+    membership = factories.UserInventoryFactory.create(user=owner, inventory=inventory)
+
+    client.force_authenticate(user=owner)
+    url = reverse("userinventory-detail", args=[membership.id])
+    response = client.delete(url)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "An inventory must have at least one member."

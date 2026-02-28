@@ -6,6 +6,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = '__all__'
+        read_only_fields = ('user',)
 
 class HouseholdSerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,7 +53,6 @@ class UserInventorySerializer(serializers.ModelSerializer):
             )
 
         return attrs
-
 
 
 
