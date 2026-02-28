@@ -3,6 +3,7 @@ from django.db.models import Q
 from inventory.serializers import UserProfileSerializer, HouseholdSerializer, InventorySerializer, UserInventorySerializer
 from rest_framework import permissions, viewsets
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import ValidationError
 from inventory.models import UserProfile, Household, Inventory, UserInventory
 from inventory.permissions import IsHouseholdOwner
 
@@ -51,6 +52,8 @@ class InventoryViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         household_id = self.kwargs.get("household_id")
+        if household_id is None:
+            raise ValidationError({"household": ["Use the household inventory endpoint to create an inventory."]})
         household = get_object_or_404(Household, pk=household_id)
 
         if not (household.user == self.request.user or household.members.filter(user=self.request.user).exists()):
@@ -101,14 +104,23 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     def perform_update(self, serializer):
-        inventory = serializer.validated_data.get('inventory', serializer.instance.inventory)
+        requester = self.request.user
+        membership = serializer.instance
+        inventory = serializer.validated_data.get('inventory', membership.inventory)
         # `partial=True` on PATCH requests means the incoming payload may omit the
         # inventory field. `validated_data` only contains keys provided by the
         # client, so we fall back to the current instance's inventory when it is
         # absent. This preserves the permission check while avoiding a KeyError
         # on partial updates.
-        if not inventory.memberships.filter(user=self.request.user).exists():
+        if not inventory.memberships.filter(user=requester).exists():
             raise PermissionDenied("You must already be a member of this inventory to perform updates.")
+
+        household = inventory.household
+        is_self_update = membership.user_id == requester.id
+        is_household_owner = household is not None and household.user_id == requester.id
+
+        if not (is_self_update or is_household_owner):
+            raise PermissionDenied("Only the household owner can update other inventory memberships.")
         serializer.save()
 
     def perform_destroy(self, instance):

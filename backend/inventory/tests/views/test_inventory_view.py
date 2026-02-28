@@ -260,6 +260,46 @@ def test_inventory_create_creates_exactly_one_membership_for_creator():
 
 
 @pytest.mark.django_db
+def test_inventory_create_requires_household_scoped_route():
+    client = APIClient()
+    creator = factories.UserFactory()
+    client.force_authenticate(user=creator)
+    url = reverse("inventory-list")
+
+    response = client.post(url, {"name": "Pantry"}, format="json")
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "household": ["Use the household inventory endpoint to create an inventory."]
+    }
+
+
+@pytest.mark.django_db
+def test_non_owner_cannot_update_another_membership():
+    client = APIClient()
+    owner = factories.UserFactory()
+    requester = factories.UserFactory()
+    target_user = factories.UserFactory()
+    replacement_user = factories.UserFactory()
+    household = factories.HouseholdFactory(user=owner)
+    inventory = factories.InventoryFactory(household=household)
+
+    for user in (requester, target_user, replacement_user):
+        user.userprofile.household = household
+        user.userprofile.save(update_fields=["household"])
+
+    factories.UserInventoryFactory.create(user=requester, inventory=inventory)
+    membership = factories.UserInventoryFactory.create(user=target_user, inventory=inventory)
+
+    client.force_authenticate(user=requester)
+    url = reverse("userinventory-detail", args=[membership.id])
+    response = client.patch(url, {"user": replacement_user.id}, format="json")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only the household owner can update other inventory memberships."
+
+
+@pytest.mark.django_db
 def test_post_userinventory_requires_requester_membership_in_inventory():
     client = APIClient()
     requester = factories.UserFactory()
