@@ -18,14 +18,18 @@ class Household(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class UserInventory(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    inventory = models.ForeignKey('Inventory', on_delete=models.CASCADE, related_name="inventory")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="inventory_memberships")
+    inventory = models.ForeignKey('Inventory', on_delete=models.CASCADE, related_name="memberships")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['user','inventory'],name='unique_user_inventory_membership')]
 
 class Inventory(models.Model):
-    household = models.ForeignKey('Household', on_delete=models.SET_NULL, null=True, blank=True)
+    household = models.ForeignKey('Household', on_delete=models.SET_NULL, null=True, blank=True, related_name='inventories')
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user = models.ManyToManyField(settings.AUTH_USER_MODEL, through="UserInventory", related_name='inventories')
 
 class FoodCategory(models.TextChoices):
     FRUIT = "FRUIT", "Fruit"

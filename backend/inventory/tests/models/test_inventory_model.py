@@ -1,8 +1,11 @@
 import random
 import string
+import pdb
 
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+
 
 from inventory.tests.factories import factories
 
@@ -84,3 +87,45 @@ def test_inventory_can_exist_without_household():
     inventory.refresh_from_db()
 
     assert inventory.household is None
+
+@pytest.mark.django_db
+def test_user_can_belong_to_multiple_inventories():
+    user = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inv1 = factories.InventoryFactory.create(household=household)
+    inv2 = factories.InventoryFactory.create(household=household)
+
+    factories.UserInventoryFactory.create(user=user, inventory=inv1)
+    factories.UserInventoryFactory.create(user=user, inventory=inv2)
+
+    inventories = user.inventories.all()
+
+    assert inventories.count() == 2
+    assert {inv1.id, inv2.id} == set(inventories.values_list("id", flat=True))
+
+@pytest.mark.django_db
+def test_inventory_can_have_multiple_users():
+    user1 = factories.UserFactory()
+    user2 = factories.UserFactory()
+    household = factories.HouseholdFactory()
+    inv = factories.InventoryFactory(household=household)
+
+    factories.UserInventoryFactory.create(user=user1, inventory=inv)
+    factories.UserInventoryFactory.create(user=user2, inventory=inv)
+
+    users = inv.memberships.all()
+
+    assert users.count() == 2
+    assert {users[0].user_id, users[1].user_id} == set(users.values_list("user_id", flat=True))
+
+@pytest.mark.django_db
+def test_user_inventory_membership_is_unique():
+    user = factories.UserFactory()
+    inv = factories.InventoryFactory()
+
+    factories.UserInventoryFactory.create(user=user, inventory=inv)
+
+    with pytest.raises(IntegrityError):
+        factories.UserInventoryFactory.create(user=user, inventory=inv)
+
+    

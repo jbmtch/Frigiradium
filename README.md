@@ -34,6 +34,17 @@ _Add screenshots or a Loom demo once the UI is polished_
    pytest
    ```
 
+## 🔌 API Quickstart
+Frigiradium uses Django REST Framework for its API. Inventories are scoped to households, and the API supports a nested route so the server can enforce household membership during creation.
+
+### Create an Inventory for a Household
+Use the nested endpoint and include only inventory fields (for example, `name`) in the body:
+```
+POST /households/<household_id>/inventory/
+```
+
+**Why a nested route?** It lets the server derive the household from the URL rather than trusting client input for authorization-sensitive fields, making access control clearer and harder to bypass.
+
 ## 👤 Author
 Justin Mitchell  
 [GitHub](https://github.com/jbmtch) • [LinkedIn](https://linkedin.com/in/jbmtch)
