@@ -296,7 +296,7 @@ def test_non_owner_cannot_update_another_membership():
     response = client.patch(url, {"user": replacement_user.id}, format="json")
 
     assert response.status_code == 403
-    assert response.json()["detail"] == "Only the household owner can update other inventory memberships."
+    assert response.json()["detail"] == "Only the household owner can reassign inventory memberships."
 
 
 @pytest.mark.django_db
