@@ -1,5 +1,4 @@
 import pytest
-import pdb
 
 from inventory.tests.factories import factories
 from inventory.models import UserInventory, UserProfile
