@@ -1,11 +1,11 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from inventory.serializers import UserProfileSerializer, HouseholdSerializer, InventorySerializer, UserInventorySerializer
+from inventory.serializers import UserProfileSerializer, HouseholdSerializer, InventorySerializer, UserInventorySerializer, FoodItemSerializer
 from rest_framework import permissions, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError
-from inventory.models import UserProfile, Household, Inventory, UserInventory
-from inventory.permissions import IsHouseholdOwner
+from inventory.models import UserProfile, Household, Inventory, UserInventory, FoodItem
+from inventory.permissions import IsHouseholdOwner, IsFoodItemOwnerOrVisibleInHousehold
 
 # Create your views here.
 
@@ -145,4 +145,52 @@ class UserInventoryViewSet(viewsets.ModelViewSet):
         if inventory.memberships.count() <= 1:
             raise PermissionDenied("An inventory must have at least one member.")
 
+        instance.delete()
+
+
+class FoodItemViewSet(viewsets.ModelViewSet):
+    serializer_class = FoodItemSerializer
+    permission_classes = [permissions.IsAuthenticated, IsFoodItemOwnerOrVisibleInHousehold]
+    queryset = FoodItem.objects.select_related("inventory", "inventory__household", "user", "unit")
+
+    def _household_membership_filter(self, user):
+        return Q(inventory__household__user=user) | Q(inventory__household__members__user=user)
+
+    def get_queryset(self):
+        user = self.request.user
+        household_id = self.kwargs.get("household_id")
+        inventory_id = self.kwargs.get("inventory_id")
+
+        base = self.queryset
+        if household_id is not None:
+            base = base.filter(inventory__household_id=household_id)
+        if inventory_id is not None:
+            base = base.filter(inventory_id=inventory_id)
+
+        own_items = Q(user=user, inventory__memberships__user=user)
+        shared_items = Q(
+            inventory__household__allow_member_item_visibility=True
+        ) & self._household_membership_filter(user)
+
+        return base.filter(own_items | shared_items).distinct()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        household_id = self.kwargs.get("household_id")
+        inventory_id = self.kwargs.get("inventory_id")
+        context["household_id"] = int(household_id) if household_id is not None else None
+        context["inventory_id"] = int(inventory_id) if inventory_id is not None else None
+        return context
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.instance.user_id != self.request.user.id:
+            raise PermissionDenied("You can only update your own food items.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.user_id != self.request.user.id:
+            raise PermissionDenied("You can only delete your own food items.")
         instance.delete()

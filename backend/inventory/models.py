@@ -14,6 +14,7 @@ class UserProfile(models.Model):
 class Household(models.Model):
     name = models.CharField(max_length=100)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, default=None)
+    allow_member_item_visibility = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -74,6 +75,5 @@ class FoodItem(models.Model):
     unit = models.ForeignKey(MeasurementUnit, on_delete=models.PROTECT, related_name="food_items")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
 
 

@@ -1,4 +1,4 @@
-from inventory.models import UserProfile, Household, Inventory, UserInventory
+from inventory.models import UserProfile, Household, Inventory, UserInventory, FoodItem
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -54,5 +54,51 @@ class UserInventorySerializer(serializers.ModelSerializer):
 
         return attrs
 
+
+class FoodItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodItem
+        fields = [
+            'id',
+            'name',
+            'category',
+            'user',
+            'inventory',
+            'storage_type',
+            'expiration_date',
+            'date_opened',
+            'date_frozen',
+            'date_purchased',
+            'isMeal',
+            'date_refridgerated',
+            'amount',
+            'unit',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ('id', 'user', 'created_at', 'updated_at')
+
+    def validate_inventory(self, inventory):
+        request = self.context['request']
+        if not inventory.memberships.filter(user=request.user).exists():
+            raise serializers.ValidationError("You can only add food items to your own inventory.")
+        return inventory
+
+    def validate(self, attrs):
+        inventory = attrs.get('inventory', getattr(self.instance, 'inventory', None))
+        request = self.context['request']
+        household_id = self.context.get('household_id')
+        inventory_id = self.context.get('inventory_id')
+
+        if household_id is not None and inventory and inventory.household_id != household_id:
+            raise serializers.ValidationError({'inventory': ['Inventory does not belong to this household.']})
+
+        if inventory_id is not None and inventory and inventory.id != inventory_id:
+            raise serializers.ValidationError({'inventory': ['Inventory does not match the inventory route parameter.']})
+
+        if self.instance and self.instance.user_id != request.user.id:
+            raise serializers.ValidationError('You can only modify your own food items.')
+
+        return attrs
 
 
